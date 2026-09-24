@@ -123,6 +123,26 @@ def analyse(case: str, tail_fraction: float = 0.5):
     )
 
 
+def water_level(case: str):
+    """Far-field still-water level, from the captured free surface.
+
+    It should be zero.  Any departure is water the boundary conditions have
+    quietly let in or out, and since the hull is fixed, a falling level means
+    a falling draught -- which shows up as a slowly decaying resistance.
+    """
+    out = []
+    pattern = os.path.join(case, "postProcessing/waterLine/*/*freeSurface*.raw")
+    for path in sorted(glob.glob(pattern)):
+        pts = np.loadtxt(path, comments="#")
+        if pts.ndim != 2 or pts.shape[1] < 3:
+            continue
+        x, z = pts[:, 0], pts[:, 2]
+        far = x < -2.0            # well upstream of the bow
+        if far.any():
+            out.append((int(os.path.basename(os.path.dirname(path))), float(z[far].mean())))
+    return out
+
+
 def y_plus(case: str):
     """Min, mean and max y+ on the hull, from the yPlus function object.
 
@@ -172,6 +192,7 @@ def main():
         if r:
             r["cells"] = cell_count(case)
             r["yplus"] = y_plus(case)
+            r["water_level"] = water_level(case)
             rows.append(r)
 
     if not rows:

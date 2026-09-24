@@ -125,12 +125,21 @@ cases at a time.
 
 ## Known limitations
 
-1. **No prism layers**, so wall-resolved friction is not available; see above.
-2. **The hull is fixed** — no sinkage and trim. At Froude numbers up to about
+1. **The still-water level is not held.** Measured well upstream of the bow,
+   it falls from −1.9 mm at iteration 1,200 to −2.8 mm at 3,000 — about 1.5 %
+   of the draught, and still moving. The inlet and outlet conditions used here
+   (`variableHeightFlowRate`, `outletPhaseMeanVelocity`) do not conserve the
+   level exactly, and because the hull is fixed, a falling level is a falling
+   draught. That is the mechanism behind the slow downward creep in pressure
+   resistance, and it is the first thing to fix: either a relaxation zone that
+   pulls the free surface back to the undisturbed solution near the
+   boundaries, or a hydrostatic pressure outlet.
+2. **No prism layers**, so wall-resolved friction is not available; see above.
+3. **The hull is fixed** — no sinkage and trim. At Froude numbers up to about
    0.4 that matters more for the total than for the wave pattern, but it is a
    real difference from a towing-tank test, where the model is free to heave
    and pitch.
-3. **No wave damping zone.** The domain is sized so reflections do not reach
+4. **No wave damping zone.** The domain is sized so reflections do not reach
    the hull within the run, rather than being absorbed.
-4. **Michell's theory is itself approximate**: it assumes a thin hull and
+5. **Michell's theory is itself approximate**: it assumes a thin hull and
    linearised free-surface conditions, so it is a reference, not a truth.

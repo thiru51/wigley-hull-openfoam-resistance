@@ -95,7 +95,7 @@ def mesh_study(rows, out):
 
 def wave_cuts(case, out, L=3.0, U=None, cuts=(0.05, 0.2, 0.5)):
     """Free-surface elevation along lines parallel to the hull centreline."""
-    files = glob.glob(os.path.join(case, "postProcessing/waterLine/*/freeSurface*.raw"))
+    files = glob.glob(os.path.join(case, "postProcessing/waterLine/*/*freeSurface*.raw"))
     if not files:
         return None
     pts = np.loadtxt(sorted(files)[-1], comments="#")
@@ -139,7 +139,7 @@ def wave_pattern(case, out, L=3.0):
     half-angle arcsin(1/3) = 19.47 degrees, whatever the speed.  It is the
     cheapest check there is that a free-surface solver is behaving.
     """
-    files = glob.glob(os.path.join(case, "postProcessing/waterLine/*/freeSurface*.raw"))
+    files = glob.glob(os.path.join(case, "postProcessing/waterLine/*/*freeSurface*.raw"))
     if not files:
         return None
     pts = np.loadtxt(sorted(files)[-1], comments="#")
@@ -160,7 +160,9 @@ def wave_pattern(case, out, L=3.0):
     xs = np.linspace(0.5, 2.0, 10)
     ax.plot(xs, (xs - 0.5) * np.tan(ang), "k--", lw=1,
             label=f"Kelvin half-angle {np.degrees(ang):.2f}°")
-    ax.axvspan(-0.5, 0.5, color="0.85", zorder=0)
+    # the hull itself, at the waterline
+    xh = np.linspace(-0.5, 0.5, 100)
+    ax.fill_between(xh, 0, 0.05 * (1 - (2 * xh) ** 2), color="0.55", zorder=3)
     ax.set_xlabel("x / L")
     ax.set_ylabel("y / L")
     ax.set_title(f"Free-surface elevation, plan view — {os.path.basename(case)}")
