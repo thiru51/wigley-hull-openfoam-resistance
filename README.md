@@ -68,6 +68,13 @@ The free surface itself is right: the plan view shows a Kelvin wave system
 inside the expected 19.47° wedge, with bow and stern crests in the right
 places and the transverse waves trailing astern.
 
+### What the mesh study says
+
+Between the 59 k and 268 k meshes at Fn = 0.316 the **total** changes by only
+2 % — but the split does not: pressure falls by 24 % and friction rises by
+46 % as the mesh refines. Agreement in a total can hide two errors cancelling,
+which is the argument for reporting the components separately throughout.
+
 ### Friction, and what prism layers are worth
 
 The sweep above has no prism layers on the hull, so its friction cannot be
