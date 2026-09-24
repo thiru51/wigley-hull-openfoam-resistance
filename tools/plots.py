@@ -132,6 +132,47 @@ def wave_cuts(case, out, L=3.0, U=None, cuts=(0.05, 0.2, 0.5)):
     return p
 
 
+def wave_pattern(case, out, L=3.0):
+    """Plan view of the free surface, with the Kelvin half-angle drawn on.
+
+    A steady wave system trails behind a point disturbance inside a wedge of
+    half-angle arcsin(1/3) = 19.47 degrees, whatever the speed.  It is the
+    cheapest check there is that a free-surface solver is behaving.
+    """
+    files = glob.glob(os.path.join(case, "postProcessing/waterLine/*/freeSurface*.raw"))
+    if not files:
+        return None
+    pts = np.loadtxt(sorted(files)[-1], comments="#")
+    if pts.ndim != 2 or pts.shape[1] < 3:
+        return None
+    x, y, z = pts[:, 0], pts[:, 1], pts[:, 2]
+    keep = (x > -1.0 * L) & (x < 2.0 * L) & (y < 1.1 * L)
+    x, y, z = x[keep], y[keep], z[keep]
+
+    fig, ax = plt.subplots(figsize=(9, 4.2))
+    sc = ax.scatter(x / L, y / L, c=z / L, s=1.5, cmap="RdBu_r",
+                    vmin=-np.percentile(np.abs(z), 98) / L,
+                    vmax=np.percentile(np.abs(z), 98) / L)
+    fig.colorbar(sc, ax=ax, label=r"$\zeta$ / L")
+
+    # Kelvin wedge, drawn from the bow
+    ang = np.arcsin(1 / 3)
+    xs = np.linspace(0.5, 2.0, 10)
+    ax.plot(xs, (xs - 0.5) * np.tan(ang), "k--", lw=1,
+            label=f"Kelvin half-angle {np.degrees(ang):.2f}°")
+    ax.axvspan(-0.5, 0.5, color="0.85", zorder=0)
+    ax.set_xlabel("x / L")
+    ax.set_ylabel("y / L")
+    ax.set_title(f"Free-surface elevation, plan view — {os.path.basename(case)}")
+    ax.legend(fontsize=8, loc="upper right")
+    ax.set_ylim(0, 1.1)
+    fig.tight_layout()
+    p = os.path.join(out, f"wave_pattern_{os.path.basename(case)}.png")
+    fig.savefig(p, dpi=160)
+    plt.close(fig)
+    return p
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cases", default="cases")
@@ -150,6 +191,7 @@ def main():
         made.append(mesh_study(rows, a.out))
     for c in cases:
         made.append(wave_cuts(c, a.out))
+        made.append(wave_pattern(c, a.out))
     for m in made:
         if m:
             print("wrote", m)

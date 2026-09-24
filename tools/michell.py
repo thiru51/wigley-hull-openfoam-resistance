@@ -25,6 +25,9 @@ prediction of the same quantity.
 
 from __future__ import annotations
 
+import json
+import os
+
 import numpy as np
 
 G = 9.81
@@ -42,10 +45,40 @@ def _lambda_max(k0: float, T: float, decay: float = 1e-14) -> float:
     return float(np.sqrt(-np.log(decay) / (k0 * T)))
 
 
+_CACHE_PATH = os.path.join(os.path.dirname(__file__), ".michell_cache.json")
+_cache: dict | None = None
+
+
+def _cached(key):
+    """Michell's integral costs a minute or two; keep the answers on disk."""
+    global _cache
+    if _cache is None:
+        try:
+            with open(_CACHE_PATH) as fh:
+                _cache = json.load(fh)
+        except (OSError, ValueError):
+            _cache = {}
+    return _cache.get(key)
+
+
+def _store(key, value):
+    _cache[key] = value
+    try:
+        with open(_CACHE_PATH, "w") as fh:
+            json.dump(_cache, fh, indent=1, sort_keys=True)
+    except OSError:
+        pass
+    return value
+
+
 def michell_resistance(
     Fn, L=3.0, B=0.3, T=0.1875, rho=999.0, n_x=2001, n_z=201, n_theta=4001, dydx=wigley_dydx
 ):
     """Wave resistance R_w (N) of the whole ship at one Froude number."""
+    key = f"{Fn:.6f}|{L}|{B}|{T}|{rho}|{n_x}|{n_z}|{n_theta}"
+    hit = _cached(key)
+    if hit is not None:
+        return hit
     U = Fn * np.sqrt(G * L)
     k0 = G / U**2
 
@@ -74,7 +107,7 @@ def michell_resistance(
 
     integrand = np.abs(I) ** 2 / np.cos(theta) ** 3
     Rw = (4.0 * rho * G**2 / (np.pi * U**2)) * np.trapezoid(integrand, theta)
-    return float(Rw)
+    return _store(key, float(Rw))
 
 
 def wetted_surface(L=3.0, B=0.3, T=0.1875, n=801):

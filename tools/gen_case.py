@@ -56,7 +56,7 @@ def w(path, cls, obj, body):
 
 
 def generate(out, fn, L=3.0, B=0.3, T=0.1875, level="medium", end_iter=3000, n_proc=20,
-             stl="cases/hull.stl"):
+             stl="cases/hull.stl", n_layers=0):
     cfg = LEVELS[level]
     U = fn * math.sqrt(G * L)
 
@@ -133,7 +133,7 @@ writeMesh       no;
     w(f"{out}/system/snappyHexMeshDict", "dictionary", "snappyHexMeshDict", f"""
 castellatedMesh true;
 snap            true;
-addLayers       false;
+addLayers       {"true" if n_layers else "false"};
 
 geometry
 {{
@@ -187,7 +187,7 @@ snapControls
 addLayersControls
 {{
     relativeSizes true;
-    layers {{}}
+    layers {{ hull {{ nSurfaceLayers {n_layers}; }} }}
     expansionRatio 1.2;
     finalLayerThickness 0.5;
     minThickness 0.1;
@@ -506,7 +506,7 @@ method          scotch;
     with open(f"{out}/case.json", "w") as fh:
         import json
         json.dump(
-            dict(fn=fn, U=U, L=L, B=B, T=T, level=level, base=base, end_iter=end_iter,
+            dict(fn=fn, U=U, L=L, B=B, T=T, level=level, base=base, end_iter=end_iter, n_layers=n_layers,
                  nx=nx, ny=ny, nz=nz, domain=dict(x=[x0, x1], y=[y0, y1], z=[z0, z1]),
                  Re=U * L / NU_WATER, rho=RHO_WATER, nu=NU_WATER),
             fh, indent=2)
@@ -521,5 +521,8 @@ if __name__ == "__main__":
     ap.add_argument("--iters", type=int, default=3000)
     ap.add_argument("--procs", type=int, default=20)
     ap.add_argument("--stl", default="cases/hull.stl")
+    ap.add_argument("--layers", type=int, default=0,
+                    help="prism layers on the hull; 0 leaves wall functions on a coarse near-wall mesh")
     a = ap.parse_args()
-    print(generate(a.out, a.fn, level=a.level, end_iter=a.iters, n_proc=a.procs, stl=a.stl))
+    print(generate(a.out, a.fn, level=a.level, end_iter=a.iters, n_proc=a.procs, stl=a.stl,
+                   n_layers=a.layers))

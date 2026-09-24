@@ -93,6 +93,25 @@ def analyse(case: str, tail_fraction: float = 0.2):
     )
 
 
+def y_plus(case: str):
+    """Min, mean and max y+ on the hull, from the yPlus function object.
+
+    Reported because it is the number that says how far the friction can be
+    trusted: without prism layers it lands far above the log-layer range.
+    """
+    files = sorted(glob.glob(os.path.join(case, "postProcessing/yPlus/*/yPlus.dat")))
+    if not files:
+        return None
+    last = None
+    for line in open(files[-1]):
+        if line.startswith("#"):
+            continue
+        parts = line.split()
+        if len(parts) >= 5 and parts[1] == "hull":
+            last = tuple(float(v) for v in parts[2:5])
+    return last  # (min, max, average)
+
+
 def cell_count(case: str):
     log = os.path.join(case, "log.snappyHexMesh")
     if not os.path.exists(log):
@@ -122,6 +141,7 @@ def main():
         r = analyse(case, a.tail)
         if r:
             r["cells"] = cell_count(case)
+            r["yplus"] = y_plus(case)
             rows.append(r)
 
     if not rows:
