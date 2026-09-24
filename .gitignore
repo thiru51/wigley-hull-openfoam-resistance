@@ -1,0 +1,6 @@
+cases/fn*/
+cases/*.runlog
+cases/hull.stl
+sweep.log
+out/*.png
+__pycache__/
