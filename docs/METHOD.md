@@ -81,8 +81,9 @@ is not sensitive to the near-wall mesh in the same way.
 ## What comes out
 
 The `forces` function object integrates pressure and viscous traction over the
-hull every ten iterations. The last 20 % of the run is averaged and turned
-into coefficients with the wetted surface of the half hull:
+hull every ten iterations. The second half of the run is averaged -- several
+periods of the limit cycle described below -- and turned into coefficients
+with the wetted surface of the half hull:
 
 ```
 Ct = R_total / (½ ρ S U²)      Cp = R_pressure / (½ ρ S U²)      Cf = R_viscous / (½ ρ S U²)
@@ -110,6 +111,12 @@ walking downhill — at Fn = 0.316 it fell by another 20 % between iteration
 
 So convergence here is declared on drift, not on scatter, and the runs go to
 3,000 iterations rather than the 1,200 that "looked" converged.
+
+Even then the end state is a **limit cycle rather than a fixed point**: the
+pressure force breathes with a period of roughly 900 iterations at about a
+third of its mean. Averaging a handful of final samples would report wherever
+in that cycle the run happened to stop, so the window is half the run and its
+amplitude is reported with the mean.
 
 ## Reproducing it
 
