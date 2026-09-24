@@ -103,6 +103,7 @@ def analyse(case: str, tail_fraction: float = 0.5):
         case=os.path.basename(case),
         fn=meta["fn"],
         level=meta["level"],
+        n_layers=meta.get("n_layers", 0),
         cells=meta.get("cells"),
         iterations=int(it[-1]),
         U=U,

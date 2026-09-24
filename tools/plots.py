@@ -44,7 +44,8 @@ def convergence(cases, out):
 def cw_curve(rows, out, level="medium"):
     """CFD pressure-resistance coefficient against Michell's wave resistance."""
     all_rows = rows
-    rows = [r for r in rows if r["level"] == level]
+    # the wall-treatment comparison run is a different setup, not another point
+    rows = [r for r in rows if r["level"] == level and not r.get("n_layers")]
     rows.sort(key=lambda r: r["fn"])
     fns = np.array([r["fn"] for r in rows])
     cp = np.array([r["Cp"] for r in rows])
@@ -68,10 +69,14 @@ def cw_curve(rows, out, level="medium"):
                     (r["fn"], 1e3 * r["Cp"]), textcoords="offset points",
                     xytext=(0, -16), ha="center", fontsize=7, color="0.35")
 
-    other = [r for r in all_rows if r["level"] != level]
+    other = [r for r in all_rows if r["level"] != level and not r.get("n_layers")]
     if other:
         ax.plot([r["fn"] for r in other], [1e3 * r["Cp"] for r in other], "o",
                 mfc="none", mec="navy", ms=7, label="coarser mesh, same speed")
+    layered = [r for r in all_rows if r.get("n_layers")]
+    if layered:
+        ax.plot([r["fn"] for r in layered], [1e3 * r["Cp"] for r in layered], "D",
+                mfc="none", mec="darkorange", ms=7, label="with prism layers")
     ax.set_xlabel("Froude number $F_n = U/\\sqrt{gL}$")
     ax.set_ylabel(r"resistance coefficient $\times 10^3$")
     ax.set_title("Wigley hull: wave resistance, CFD against thin-ship theory")
@@ -85,7 +90,7 @@ def cw_curve(rows, out, level="medium"):
 
 
 def mesh_study(rows, out):
-    rows = [r for r in rows if abs(r["fn"] - 0.316) < 1e-6 and r["cells"]]
+    rows = [r for r in rows if abs(r["fn"] - 0.316) < 1e-6 and r["cells"] and not r.get("n_layers")]
     if len(rows) < 2:
         return None
     rows.sort(key=lambda r: r["cells"])

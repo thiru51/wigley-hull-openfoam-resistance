@@ -68,6 +68,27 @@ The free surface itself is right: the plan view shows a Kelvin wave system
 inside the expected 19.47° wedge, with bow and stern crests in the right
 places and the transverse waves trailing astern.
 
+### Friction, and what prism layers are worth
+
+The sweep above has no prism layers on the hull, so its friction cannot be
+trusted. One extra case at Fn = 0.400 adds three layers and says how much that
+costs and buys:
+
+| | cells | mean y⁺ | Cf × 10³ | fraction of ITTC-57 | Cp × 10³ | Ct × 10³ |
+|---|---|---|---|---|---|---|
+| no layers | 268 k | 109 | 1.60 | 48 % | 2.95 | 4.54 |
+| 3 prism layers | 353 k | 12.7 | 2.66 | **81 %** | 3.12 | 5.79 |
+
+Adding layers raises the computed friction from **48 % to 81 %** of the
+ITTC-1957 line for 32 % more cells, and moves the pressure force by only 6 % —
+which is the evidence for treating `Cp` as the reliable half of this
+computation and `Cf` as the unreliable half.
+
+The residual 19 % gap has a named cause: mean y⁺ lands at **12.7**, inside the
+buffer layer, which is precisely where wall functions are least accurate. The
+next step would be either thicker layers to push y⁺ above 30, or many more to
+resolve down to y⁺ < 1.
+
 ### Figures
 
 | Figure | What it shows |

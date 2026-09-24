@@ -10,6 +10,7 @@ Coefficients use the wetted surface of the half hull; the domain is a half model
 | fn0316 | 0.316 | 268,322 | 3000 | 18.8 | 3.048 | 1.410 | 1.638 | 3.433 | 1.830 | 0.77 | -53 % | 39 % |
 | fn0350 | 0.350 | 268,322 | 3000 | 23.1 | 3.939 | 2.303 | 1.636 | 3.369 | 1.247 | 1.85 | -13 % | 11 % |
 | fn0400 | 0.400 | 268,322 | 3000 | 30.2 | 4.542 | 2.947 | 1.595 | 3.288 | 2.733 | 1.08 | -0 % | 5 % |
+| fn0400_layers | 0.400 | 353,132 | 3000 | 30.2 | 5.785 | 3.122 | 2.663 | 3.288 | 2.733 | 1.14 | +7 % | 6 % |
 
 `Cp/Cw` compares the computed pressure resistance with Michell's thin-ship wave
 resistance. Two effects pull it in opposite directions: the computed pressure
