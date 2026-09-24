@@ -53,7 +53,10 @@ def read_forces(case: str):
 
 
 def analyse(case: str, tail_fraction: float = 0.2):
-    meta = json.load(open(os.path.join(case, "case.json")))
+    meta_path = os.path.join(case, "case.json")
+    if not os.path.exists(meta_path):
+        return None          # a deferred or half-built case directory
+    meta = json.load(open(meta_path))
     data = read_forces(case)
     if data is None:
         return None
@@ -68,6 +71,16 @@ def analyse(case: str, tail_fraction: float = 0.2):
 
     Rt, Rp, Rv = tot[sl].mean(), pres[sl].mean(), visc[sl].mean()
     spread = tot[sl].std() / abs(Rt) if Rt else np.nan
+
+    # Scatter alone can look settled while the force is still walking
+    # downhill, which is exactly what the first runs of this study did.  The
+    # drift -- the least-squares slope over the averaging window, expressed as
+    # a percentage change across it -- is the honest convergence measure.
+    if len(it[sl]) > 2 and Rt:
+        slope = np.polyfit(it[sl], tot[sl], 1)[0]
+        drift = slope * (it[sl][-1] - it[sl][0]) / abs(Rt)
+    else:
+        drift = np.nan
 
     Re = U * L / meta["nu"]
     cw_michell = michell.michell_resistance(meta["fn"], L=meta["L"], B=meta["B"], T=meta["T"],
@@ -90,6 +103,7 @@ def analyse(case: str, tail_fraction: float = 0.2):
         Cf_ittc57=michell.ittc57(Re),
         Cw_michell=cw_michell,
         tail_spread=spread,
+        tail_drift=drift,
     )
 
 
@@ -154,12 +168,13 @@ def main():
         for r in rows:
             fh.write(",".join("" if r[k] is None else str(r[k]) for k in keys) + "\n")
 
-    print(f"{'case':>16} {'Fn':>6} {'cells':>8} {'Ct*1e3':>8} {'Cp*1e3':>8} {'Cf*1e3':>8} "
-          f"{'ITTC*1e3':>9} {'Michell*1e3':>12} {'tail%':>6}")
+    print(f"{'case':>16} {'Fn':>6} {'cells':>8} {'iters':>6} {'Ct*1e3':>8} {'Cp*1e3':>8} "
+          f"{'Cf*1e3':>8} {'ITTC*1e3':>9} {'Michell*1e3':>12} {'sd%':>6} {'drift%':>7}")
     for r in rows:
-        print(f"{r['case']:>16} {r['fn']:6.3f} {r['cells'] or 0:8d} {1e3*r['Ct']:8.3f} "
-              f"{1e3*r['Cp']:8.3f} {1e3*r['Cf']:8.3f} {1e3*r['Cf_ittc57']:9.3f} "
-              f"{1e3*r['Cw_michell']:12.3f} {100*r['tail_spread']:6.2f}")
+        print(f"{r['case']:>16} {r['fn']:6.3f} {r['cells'] or 0:8d} {r['iterations']:6d} "
+              f"{1e3*r['Ct']:8.3f} {1e3*r['Cp']:8.3f} {1e3*r['Cf']:8.3f} "
+              f"{1e3*r['Cf_ittc57']:9.3f} {1e3*r['Cw_michell']:12.3f} "
+              f"{100*r['tail_spread']:6.2f} {100*r['tail_drift']:7.2f}")
     return rows
 
 

@@ -81,10 +81,8 @@ is not sensitive to the near-wall mesh in the same way.
 ## What comes out
 
 The `forces` function object integrates pressure and viscous traction over the
-hull every ten iterations. The last 20 % of the run is averaged — the tail
-scatter is reported in the results table, so the reader can see how settled
-each case is — and turned into coefficients with the wetted surface of the
-half hull:
+hull every ten iterations. The last 20 % of the run is averaged and turned
+into coefficients with the wetted surface of the half hull:
 
 ```
 Ct = R_total / (½ ρ S U²)      Cp = R_pressure / (½ ρ S U²)      Cf = R_viscous / (½ ρ S U²)
@@ -93,6 +91,25 @@ Ct = R_total / (½ ρ S U²)      Cp = R_pressure / (½ ρ S U²)      Cf = R_vi
 `Cp` is compared with Michell's `Cw`; `Cf` with the ITTC-1957 line; and
 `Cp + Cf_ITTC` gives a corrected total resistance, which is the practical way
 of using a computation whose friction is under-resolved.
+
+## Knowing when a run is finished
+
+Two numbers are reported for every case, not one:
+
+* **scatter** — the standard deviation over the averaging window;
+* **drift** — the least-squares slope across that same window, as a percentage
+  of the mean.
+
+The distinction matters, and it cost this study a set of runs to learn. At
+around 600 iterations the force history looks beautifully settled: the scatter
+is down to 0.2 %, and stopping there would have produced a confident, wrong
+answer. It is the *decay of the starting transient* levelling off, not the
+steady state. Several hundred iterations later the pressure force is still
+walking downhill — at Fn = 0.316 it fell by another 20 % between iteration
+1,000 and 1,200, with the scatter still small.
+
+So convergence here is declared on drift, not on scatter, and the runs go to
+3,000 iterations rather than the 1,200 that "looked" converged.
 
 ## Reproducing it
 
