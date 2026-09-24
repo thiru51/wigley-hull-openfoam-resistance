@@ -52,7 +52,7 @@ def read_forces(case: str):
     return (np.array(it)[o], np.array(tot)[o], np.array(pres)[o], np.array(visc)[o])
 
 
-def analyse(case: str, tail_fraction: float = 0.2):
+def analyse(case: str, tail_fraction: float = 0.5):
     meta_path = os.path.join(case, "case.json")
     if not os.path.exists(meta_path):
         return None          # a deferred or half-built case directory
@@ -62,6 +62,11 @@ def analyse(case: str, tail_fraction: float = 0.2):
         return None
     it, tot, pres, visc = data
 
+    # The steady state here is a limit cycle, not a fixed point: the wave
+    # system breathes with a period of several hundred iterations.  Averaging
+    # a handful of final samples would pick up wherever in that cycle the run
+    # happened to stop, so the window is half the run -- several periods --
+    # and its amplitude is reported alongside the mean.
     n_tail = max(5, int(len(it) * tail_fraction))
     sl = slice(-n_tail, None)
 
@@ -114,6 +119,7 @@ def analyse(case: str, tail_fraction: float = 0.2):
         cells_per_wave=cells_per_wave,
         tail_spread=spread,
         tail_drift=drift,
+        osc_amplitude=float(pres[sl].std() / abs(Rp)) if Rp else float("nan"),
     )
 
 
@@ -154,7 +160,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cases", default="cases")
     ap.add_argument("--out", default="out")
-    ap.add_argument("--tail", type=float, default=0.2)
+    ap.add_argument("--tail", type=float, default=0.5)
     a = ap.parse_args()
 
     os.makedirs(a.out, exist_ok=True)
