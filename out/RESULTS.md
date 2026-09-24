@@ -5,10 +5,11 @@ Coefficients use the wetted surface of the half hull; the domain is a half model
 
 | case | Fn | cells | iters | cells/λ | Ct×10³ | Cp×10³ | Cf×10³ | ITTC-57 Cf×10³ | Michell Cw×10³ | Cp/Cw | drift | oscillation |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| fn0316_coarse | 0.316 | 59,507 | 3000 | 12.5 | 2.979 | 1.857 | 1.122 | 3.433 | 1.830 | 1.01 | -13 % | 22 % |
 | fn0250 | 0.250 | 268,322 | 3000 | 11.8 | 2.701 | 0.968 | 1.733 | 3.588 | 1.063 | 0.91 | +5 % | 54 % |
 | fn0316 | 0.316 | 268,322 | 3000 | 18.8 | 3.048 | 1.410 | 1.638 | 3.433 | 1.830 | 0.77 | -53 % | 39 % |
-| fn0350 | 0.350 | 268,322 | 1730 | 23.1 | 4.637 | 2.906 | 1.731 | 3.369 | 1.247 | 2.33 | -27 % | 12 % |
-| fn0400 | 0.400 | 268,322 | 1740 | 30.2 | 4.854 | 3.191 | 1.664 | 3.288 | 2.733 | 1.17 | -6 % | 2 % |
+| fn0350 | 0.350 | 268,322 | 3000 | 23.1 | 3.939 | 2.303 | 1.636 | 3.369 | 1.247 | 1.85 | -13 % | 11 % |
+| fn0400 | 0.400 | 268,322 | 3000 | 30.2 | 4.542 | 2.947 | 1.595 | 3.288 | 2.733 | 1.08 | -0 % | 5 % |
 
 `Cp/Cw` compares the computed pressure resistance with Michell's thin-ship wave
 resistance. Two effects pull it in opposite directions: the computed pressure

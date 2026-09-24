@@ -24,8 +24,8 @@ bash   tools/sweep.sh            # the whole Froude sweep and mesh study
 | | |
 |---|---|
 | hull | Wigley parabolic, L = 3.0 m, B = 0.3 m, T = 0.1875 m |
-| speeds | Fn = 0.10 (baseline), 0.25, 0.30, 0.316, 0.35, 0.40 |
-| Reynolds number | 1.4 × 10⁶ to 5.7 × 10⁶ |
+| speeds | Fn = 0.25, 0.316, 0.35, 0.40 |
+| Reynolds number | 3.7 × 10⁶ to 6.0 × 10⁶ |
 | solver | `interFoam`, VOF, local time stepping |
 | turbulence | k-ω SST with wall functions |
 | mesh | 268 k cells (medium); coarse and fine variants for the mesh study |
@@ -36,15 +36,47 @@ claim, is in [docs/METHOD.md](docs/METHOD.md).
 
 ## Results
 
-See [out/RESULTS.md](out/RESULTS.md), which is regenerated from the case
-directories rather than typed, and the figures in `out/`:
+Five cases, all run to 3,000 LTS iterations and averaged over the second half.
+Full table, with the convergence and mesh diagnostics, in
+[out/RESULTS.md](out/RESULTS.md) — regenerated from the case directories
+rather than typed.
+
+| Fn | mesh | cells/λ | Cp × 10³ | Michell Cw × 10³ | Cp / Cw |
+|---|---|---|---|---|---|
+| 0.250 | 268 k | 11.8 | 0.97 | 1.06 | 0.91 |
+| 0.316 | 59 k | 12.5 | 1.86 | 1.83 | 1.01 |
+| 0.316 | 268 k | 18.8 | 1.41 | 1.83 | 0.77 |
+| 0.350 | 268 k | 23.1 | 2.30 | 1.25 | 1.85 |
+| 0.400 | 268 k | 30.2 | 2.95 | 2.73 | **1.08** |
+
+**The best-resolved, best-converged case is the one to read.** At Fn = 0.400 —
+30 cells per wavelength, force drift under 1 % across the averaging window —
+the computed pressure resistance sits **8 % above** Michell's wave resistance,
+which is the right side to be on: the computed force also carries viscous form
+drag, and Michell's inviscid theory has no term for it.
+
+**What the computation does not reproduce is the hump-and-hollow structure.**
+Michell predicts a hump near Fn 0.30 and a hollow near 0.35, both of which are
+interference effects between the bow and stern wave systems and so depend on
+getting the wave *phase* right over a ship length. With 12–30 cells per
+wavelength in the plane of the free surface — practice asks for 40 or more —
+those features are smeared, and the computed curve rises smoothly through
+them. The annotation on `cw_vs_michell.png` puts the resolution next to each
+point, because that is the number that explains the disagreement.
+
+The free surface itself is right: the plan view shows a Kelvin wave system
+inside the expected 19.47° wedge, with bow and stern crests in the right
+places and the transverse waves trailing astern.
+
+### Figures
 
 | Figure | What it shows |
 |---|---|
-| `cw_vs_michell.png` | computed wave resistance against Michell's theory across the Froude range |
+| `cw_vs_michell.png` | computed wave resistance against Michell's theory, each point labelled with its wave resolution |
+| `wave_pattern_*.png` | plan view of the free surface, with the Kelvin half-angle drawn on |
+| `wave_cuts_*.png` | free-surface elevation along cuts parallel to the centreline |
 | `convergence.png` | the force history of every case, and how settled it is |
 | `mesh_study.png` | coefficients against cell size at Fn = 0.316 |
-| `wave_cuts_*.png` | free-surface elevation along cuts parallel to the centreline |
 
 ## Why this hull, and why Michell
 
