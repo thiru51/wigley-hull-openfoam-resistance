@@ -83,6 +83,14 @@ def analyse(case: str, tail_fraction: float = 0.2):
         drift = np.nan
 
     Re = U * L / meta["nu"]
+
+    # How well the mesh can carry the waves it is asked to make.  The free
+    # surface is refined in z only, so the in-plane spacing there is still the
+    # background cell size, and the transverse wavelength of a steady ship
+    # wave system is 2*pi*U^2/g.  Ship CFD practice wants 40 or more cells per
+    # wavelength; what this mesh actually has is reported per case.
+    wavelength = 2.0 * np.pi * U**2 / G
+    cells_per_wave = wavelength / meta["base"]
     cw_michell = michell.michell_resistance(meta["fn"], L=meta["L"], B=meta["B"], T=meta["T"],
                                             rho=rho) / 2.0 / q
 
@@ -102,6 +110,8 @@ def analyse(case: str, tail_fraction: float = 0.2):
         Cf=Rv / q,
         Cf_ittc57=michell.ittc57(Re),
         Cw_michell=cw_michell,
+        wavelength_m=wavelength,
+        cells_per_wave=cells_per_wave,
         tail_spread=spread,
         tail_drift=drift,
     )
@@ -169,12 +179,12 @@ def main():
             fh.write(",".join("" if r[k] is None else str(r[k]) for k in keys) + "\n")
 
     print(f"{'case':>16} {'Fn':>6} {'cells':>8} {'iters':>6} {'Ct*1e3':>8} {'Cp*1e3':>8} "
-          f"{'Cf*1e3':>8} {'ITTC*1e3':>9} {'Michell*1e3':>12} {'sd%':>6} {'drift%':>7}")
+          f"{'Cf*1e3':>8} {'ITTC*1e3':>9} {'Michell*1e3':>12} {'cell/lam':>9} {'sd%':>6} {'drift%':>7}")
     for r in rows:
         print(f"{r['case']:>16} {r['fn']:6.3f} {r['cells'] or 0:8d} {r['iterations']:6d} "
               f"{1e3*r['Ct']:8.3f} {1e3*r['Cp']:8.3f} {1e3*r['Cf']:8.3f} "
               f"{1e3*r['Cf_ittc57']:9.3f} {1e3*r['Cw_michell']:12.3f} "
-              f"{100*r['tail_spread']:6.2f} {100*r['tail_drift']:7.2f}")
+              f"{r['cells_per_wave']:9.1f} {100*r['tail_spread']:6.2f} {100*r['tail_drift']:7.2f}")
     return rows
 
 
